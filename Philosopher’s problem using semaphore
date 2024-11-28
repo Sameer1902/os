@@ -1,0 +1,76 @@
+import java.util.concurrent.Semaphore;
+class DiningPhilosophers 
+{
+    // Number of philosophers
+    static final int NUM_PHILOSOPHERS = 5;
+    // Array of semaphores for forks
+    static Semaphore[] forks = new Semaphore[NUM_PHILOSOPHERS];
+    // Semaphore to ensure limited philosophers are trying to eat at a time
+    static Semaphore maxDiners = new Semaphore(NUM_PHILOSOPHERS - 1);
+    public static void main(String[] args) 
+{
+        // Initialize forks as semaphores
+        for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+            forks[i] = new Semaphore(1); // Each fork can be used by one philosopher at a time}
+
+        // Create philosopher threads
+        Philosopher[] philosophers = new Philosopher[NUM_PHILOSOPHERS];
+        for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+            philosophers[i] = new Philosopher(i);
+            new Thread(philosophers[i]).start();
+        }}
+    static class Philosopher implements Runnable {
+        private int id;
+        private int leftFork;
+        private int rightFork;
+        Philosopher(int id) {
+            this.id = id;
+            this.leftFork = id;
+            this.rightFork = (id + 1) % NUM_PHILOSOPHERS; }
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    think();
+                    pickUpForks();
+                    eat();
+                    putDownForks();   }
+            }
+ catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Philosopher " + id + " was interrupted.");
+            }
+}
+        private void think() throws InterruptedException {
+            System.out.println("Philosopher " + id + " is thinking.");
+            Thread.sleep((int) (Math.random() * 1000)); }
+        private void pickUpForks() throws InterruptedException {
+            // Ensure no deadlock by limiting concurrent diners
+            maxDiners.acquire();
+            // Pick up left fork
+            forks[leftFork].acquire();
+            System.out.println("Philosopher " + id + " picked up left fork " + leftFork);
+
+            // Pick up right fork
+            forks[rightFork].acquire();
+            System.out.println("Philosopher " + id + " picked up right fork " + rightFork);
+        }
+
+        private void eat() throws InterruptedException {
+            System.out.println("Philosopher " + id + " is eating.");
+            Thread.sleep((int) (Math.random() * 1000));
+        }
+
+        private void putDownForks() {
+            // Put down left fork
+            forks[leftFork].release();
+            System.out.println("Philosopher " + id + " put down left fork " + leftFork);
+            // Put down right fork
+            forks[rightFork].release();
+            System.out.println("Philosopher " + id + " put down right fork " + rightFork);
+
+            // Allow another philosopher to dine
+            maxDiners.release();
+        }
+    }
+}
