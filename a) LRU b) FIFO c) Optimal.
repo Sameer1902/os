@@ -1,0 +1,87 @@
+import java.util.*;
+public class PageReplacement {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Input number of frames
+        System.out.print("Enter the number of frames: ");
+        int frames = scanner.nextInt();
+        // Input reference string
+        System.out.print("Enter the number of pages in the reference string: ");
+        int n = scanner.nextInt();
+        int[] referenceString = new int[n];
+        System.out.println("Enter the reference string:");
+        for (int i = 0; i < n; i++) {
+            referenceString[i] = scanner.nextInt();  }
+        // Execute algorithms
+        System.out.println("\nFIFO Page Replacement:");
+        fifo(referenceString, frames);
+        System.out.println("\nLRU Page Replacement:");
+        lru(referenceString, frames);
+        System.out.println("\nOptimal Page Replacement:");
+        optimal(referenceString, frames);
+        scanner.close();}
+    // FIFO Page Replacement
+    private static void fifo(int[] referenceString, int frames) {
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> memory = new HashSet<>();
+        int pageFaults = 0;
+        for (int page : referenceString) {
+            if (!memory.contains(page)) {
+                // Page fault
+                pageFaults++;
+                if (memory.size() == frames) {
+                    int removedPage = queue.poll();
+                    memory.remove(removedPage);      }
+                queue.add(page);
+                memory.add(page); }
+            System.out.println("Memory: " + memory);}
+        System.out.println("Total Page Faults (FIFO): " + pageFaults);}
+    // LRU Page Replacement
+    private static void lru(int[] referenceString, int frames) {
+        List<Integer> memory = new ArrayList<>();
+        int pageFaults = 0;
+        for (int page : referenceString) {
+            if (!memory.contains(page)) {
+                // Page fault
+                pageFaults++;
+                if (memory.size() == frames) {
+                    memory.remove(0); // Remove the least recently used page   }
+                memory.add(page);
+            } else {
+                // Page hit: Move the page to the most recently used position
+                memory.remove((Integer) page);
+                memory.add(page);   }
+            System.out.println("Memory: " + memory); }
+        System.out.println("Total Page Faults (LRU): " + pageFaults); }
+    // Optimal Page Replacement
+    private static void optimal(int[] referenceString, int frames) {
+        List<Integer> memory = new ArrayList<>();
+        int pageFaults = 0;
+        for (int i = 0; i < referenceString.length; i++) {
+            int page = referenceString[i];
+            if (!memory.contains(page)) {
+                // Page fault
+                pageFaults++;
+                if (memory.size() == frames) {
+                    // Find the page to be replaced
+                    int farthest = -1;
+                    int indexToReplace = -1;
+                    for (int j = 0; j < memory.size(); j++) {
+                        int nextIndex = findNextIndex(referenceString, i + 1, memory.get(j));
+                        if (nextIndex == -1) {
+                            indexToReplace = j;
+                            break;   }
+                        if (nextIndex > farthest) {
+                            farthest = nextIndex;
+                            indexToReplace = j;     }
+                    }     memory.remove(indexToReplace);   }
+                memory.add(page);     }
+            System.out.println("Memory: " + memory); }
+        System.out.println("Total Page Faults (Optimal): " + pageFaults);    }
+    private static int findNextIndex(int[] referenceString, int start, int page) {
+        for (int i = start; i < referenceString.length; i++) {
+            if (referenceString[i] == page) {
+                return i;
+            }   }
+        return -1; // Page not used in the future
+    }}
