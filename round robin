@@ -1,0 +1,41 @@
+import java.util.*;
+public class RoundRobin {
+    public static void roundRobinScheduling(String[] processes, int[] burstTimes, int timeQuantum) {
+        int n = processes.length;
+        int[] remainingBurstTimes = Arrays.copyOf(burstTimes, n); // Copy of burst times for tracking remaining time
+        int[] waitingTimes = new int[n]; // Waiting time for each process
+        int[] turnaroundTimes = new int[n]; // Turnaround time for each process
+        int currentTime = 0; // Track the current time
+        // Processing each process in Round Robin fashion
+        boolean done;
+        do {
+            done = true; // Assume all processes are completed
+            for (int i = 0; i < n; i++) {
+                // Check if this process has remaining burst time
+                if (remainingBurstTimes[i] > 0) {
+                    done = false; // At least one process is not done 
+                    if (remainingBurstTimes[i] > timeQuantum) {
+                        currentTime += timeQuantum; // Increment current time by time quantum
+                        remainingBurstTimes[i] -= timeQuantum; // Decrement remaining burst time
+                    } else {
+                        currentTime += remainingBurstTimes[i]; // Add remaining time to current time
+                        waitingTimes[i] = currentTime - burstTimes[i]; // Calculate waiting time
+                        remainingBurstTimes[i] = 0; // Mark process as done
+                    } }}
+        } while (!done); // Repeat until all processes are done
+        for (int i = 0; i < n; i++) {
+            turnaroundTimes[i] = burstTimes[i] + waitingTimes[i];    }
+        // Display results
+        System.out.println("Process\tBurst Time\tWait Time\tTurnaround Time");
+        for (int i = 0; i < n; i++) {
+            System.out.println(processes[i] + "\t\t" + burstTimes[i] + "\t\t" + waitingTimes[i] + "\t\t" + turnaroundTimes[i]);   }
+        // Calculate average waiting time and average turnaround time
+        double avgWaitTime = Arrays.stream(waitingTimes).average().orElse(0.0);
+        double avgTurnaroundTime = Arrays.stream(turnaroundTimes).average().orElse(0.0);
+        System.out.printf("\nAverage Wait Time: %.2f\n", avgWaitTime);
+        System.out.printf("Average Turnaround Time: %.2f\n", avgTurnaroundTime); }
+    public static void main(String[] args) {
+        String[] processes = {"P1", "P2", "P3", "P4"};
+        int[] burstTimes = {10, 5, 8, 6};
+        int timeQuantum = 3;
+        roundRobinScheduling(processes, burstTimes, timeQuantum); }}
