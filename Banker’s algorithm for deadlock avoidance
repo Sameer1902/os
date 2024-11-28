@@ -1,0 +1,75 @@
+import java.util.Scanner;
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // Input: Number of processes and resources
+        System.out.print("Enter the number of processes: ");
+        int n = sc.nextInt();
+        System.out.print("Enter the number of resources: ");
+        int m = sc.nextInt();
+        // Input: Allocation, Maximum, and Available arrays
+        int[][] allocation = new int[n][m];
+        int[][] maximum = new int[n][m];
+        int[][] need = new int[n][m];
+        int[] available = new int[m];
+        System.out.println("Enter the Allocation matrix:");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                allocation[i][j] = sc.nextInt();}}
+        System.out.println("Enter the Maximum matrix:");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                maximum[i][j] = sc.nextInt();
+                need[i][j] = maximum[i][j] - allocation[i][j]; // Calculate Need matrix}}
+        System.out.println("Enter the Available resources:");
+        for (int i = 0; i < m; i++) {
+            available[i] = sc.nextInt();}
+        System.out.println("\nNeed Matrix:");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                System.out.print(need[i][j] + " ");}
+            System.out.println();}
+        // Perform Safety Check
+        if (isSafe(n, m, allocation, need, available)) {
+            System.out.println("\nThe system is in a safe state.");
+        } else {
+            System.out.println("\nThe system is NOT in a safe state.");
+        }
+        sc.close();   }
+    // Function to check if the system is in a safe state
+    public static boolean isSafe(int n, int m, int[][] allocation, int[][] need, int[] available) {
+        boolean[] finished = new boolean[n]; // Tracks finished processes
+        int[] work = available.clone();     // Work array to simulate available resources
+        int[] safeSequence = new int[n];    // Stores the safe sequence
+        int count = 0;
+        while (count < n) {
+            boolean foundProcess = false;
+            for (int i = 0; i < n; i++) {
+                if (!finished[i]) {
+                    boolean canExecute = true;
+                    // Check if need[i] <= work
+                    for (int j = 0; j < m; j++) {
+                        if (need[i][j] > work[j]) {
+                            canExecute = false;
+                            break; }}
+                    // If process can be executed
+                    if (canExecute) {
+                        for (int j = 0; j < m; j++) {
+                            work[j] += allocation[i][j]; // Release resources
+}
+                        safeSequence[count++] = i; // Add process to safe sequence
+                        finished[i] = true;
+                        foundProcess = true;    }
+                }}
+            // If no process can be executed
+            if (!foundProcess) {
+                return false; // System is not in a safe state
+            }     }
+        // Print Safe Sequence
+        System.out.print("Safe Sequence: ");
+        for (int i = 0; i < n; i++) {
+            System.out.print("P" + safeSequence[i]);
+            if (i != n - 1) System.out.print(" -> ");
+        }
+        System.out.println();
+        return true; }}
